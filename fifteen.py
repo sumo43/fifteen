@@ -7,8 +7,9 @@ s = 4
 large = 400000
 
 
-
-#TODO IDA
+# TODO IDA
+#   - make it return the goal state and its path
+#   - make sure that pathfinding is working as intended, if its a memory problem, redo in cpp later
 
 def find_zero(state):
 
@@ -18,28 +19,29 @@ def find_zero(state):
         if e[i] == 0:
             return i
 
+
 def pprint(state):
 
     for i in range(s):
-            for item in state[i * s: i * s + s]:
-                if item > 9:
-                    print(item, " ", end="")
-                else:
-                    print(item, "  ", end="")
-            
-            print()
+        for item in state[i * s: i * s + s]:
+            if item > 9:
+                print(item, " ", end="")
+            else:
+                print(item, "  ", end="")
+
+        print()
 
 
 def neighbors(state):
 
-    #since state is not a compound object, shallow copy works fine
+    # since state is not a compound object, shallow copy works fine
 
     neighbors = []
     zero = find_zero(state)
 
-    #try to safe access cameFrom dict before creating each new state
+    # try to safe access cameFrom dict before creating each new state
     if zero < s*(s-1):
-        #swap with below
+        # swap with below
         newboard = list(state)
 
         temp = newboard[zero + s]
@@ -50,7 +52,7 @@ def neighbors(state):
         neighbors.append(newboard)
 
     if zero > s-1:
-        #swap with above
+        # swap with above
         newboard = list(state)
 
         temp = newboard[zero - s]
@@ -61,7 +63,7 @@ def neighbors(state):
         neighbors.append(newboard)
 
     if zero % s > 0:
-        #swap with left
+        # swap with left
         newboard = list(state)
 
         temp = newboard[zero - 1]
@@ -72,7 +74,7 @@ def neighbors(state):
         neighbors.append(newboard)
 
     if zero % s < s-1:
-        #swap with right
+        # swap with right
         newboard = list(state)
 
         temp = newboard[zero + 1]
@@ -87,13 +89,13 @@ def neighbors(state):
 
 def h(se):
 
-    #total manhattan dist of the board
+    # total manhattan dist of the board
     state = list(se)
-    
+
     cost = 0
-    
+
     for i in range(s*s):
-        
+
         val = state[i]
 
         if val == 0:
@@ -103,7 +105,7 @@ def h(se):
             cost += abs(val // s - i // s) + abs(val % s - i % s)
 
     # other heuristic, only checks positions
-    
+
     """
     for i in range(16):
         val = n.state[i // 4, i % 4]
@@ -118,7 +120,7 @@ def h(se):
 
 def g(n, cameFrom):
 
-    #cost of the path from start position to current position
+    # cost of the path from start position to current position
 
     pos = {}
     cost = 0
@@ -142,7 +144,7 @@ def g(n, cameFrom):
     while(cameFrom[node] != None):
         node = cameFrom[node]
         i += 1
-    
+
     return i
 
 
@@ -156,10 +158,10 @@ def random_state():
 
 def solvable(state):
 
-    #SOLVABILITY
+    # SOLVABILITY
     # an inversion is when i < j but state[i] > state[j]
-    #if n is odd, the number of inversions has to be even 
-    #if n is even:
+    # if n is odd, the number of inversions has to be even
+    # if n is even:
     # if number of inversions is even, the position of the zero is odd counting from bottom
     # if number of inversions is odd, the position of the zero is even from bottom
 
@@ -170,32 +172,31 @@ def solvable(state):
             if i < j and state[i] > state[j] and state[j] != 0:
                 count += 1
 
-    
     if s % 2 == 1:
         return count % 2 == 0
-    
+
     else:
 
         zeropos = find_zero(state)
         zero_odd = zeropos > 11 or 3 < zeropos < 8
-        
+
         if (zero_odd and count % 2 == 0) or (not zero_odd and count % 2 == 1):
             return True
 
 
-#works for n < 4, too slow for n >= 4    
+# works for n < 4, too slow for n >= 4
 
 def AStar(start):
 
     # goal state
     goal = [i for i in range(1, (s*s+1))]
     goal[s*s-1] = 0
-    
+
     goal = tuple(goal)
-    
-    #test w goal, make openset and fscore work
-    #For node n, cameFrom[n] is the node immediately preceding it on the cheapest path from start
-    #to n currently known.
+
+    # test w goal, make openset and fscore work
+    # For node n, cameFrom[n] is the node immediately preceding it on the cheapest path from start
+    # to n currently known.
 
     openSet = []
     openSet.append(start)
@@ -203,37 +204,34 @@ def AStar(start):
     cameFrom = dict()
     cameFrom[start] = None
 
-    #default value of infinity
+    # default value of infinity
     gScore = dict()
     gScore[start] = 0
 
-    
     # priority, state
     fScore = queue.PriorityQueue()
-    fScore.put((h(start), start)) 
+    fScore.put((h(start), start))
 
     while(len(openSet) != 0):
 
-
         f, state = fScore.get()
         openSet.remove(state)
-        
 
         # take the lowe
 
         if state == goal:
-            #implement win mechanics
+            # implement win mechanics
             return state
 
         for neighbor in neighbors(state, cameFrom):
 
             tentative_gscore = gScore[state] + 1
-   
+
             old_gscore = gScore.get(neighbor)
             if(old_gscore == None):
                 old_gscore = large
 
-            #you found a better path, record it
+            # you found a better path, record it
             if tentative_gscore < old_gscore:
 
                 cameFrom[neighbor] = state
@@ -247,15 +245,16 @@ def AStar(start):
 
     return state
 
+
 def IDAStar(start):
 
-    #goal node
+    # goal node
     goal = [i for i in range(1, (s*s+1))]
     goal[s*s-1] = 0
     goal = tuple(goal)
 
-    #current search path (stack)
-    #bound is the current threshold
+    # current search path (stack)
+    # bound is the current threshold
 
     bound = h(start)
     path = [start]
@@ -269,9 +268,11 @@ def IDAStar(start):
             print("NOT FOUND")
         bound = t
 
+
 def successors(node, gscore):
     n = neighbors(node)
     return sorted(n, key=lambda node: gscore + h(node))
+
 
 def search(path, gscore, bound, goal):
 
@@ -293,47 +294,41 @@ def search(path, gscore, bound, goal):
             if t < m:
                 m = t
             path.pop(-1)
-    
+
     return m
 
+
 class game():
-    
+
     def __init__(self):
 
         self.s = s
-        
 
-        self.state = random_state() 
+        self.state = random_state()
 
         while not solvable(copy(self.state)):
             self.state = random_state()
 
-
         self.state = tuple(self.state)
-        
-        pprint(self.state)
 
-        print(solvable((13,2,10,3,1,12,8,4,5,0,9,6,15,14,11,7)))
+        self.state = (15, 13, 12, 0, 9, 14, 2, 1, 10, 4, 3, 8, 11, 7, 5, 6)
 
-        self.state = (13,2,10,3,1,12,8,4,5,0,9,6,15,14,11,7)
+        print(solvable(self.state))
 
         self.state = IDAStar(self.state)
         print(self.state)
-
-
-        
 
     def prints(self):
 
         print(h(self.state))
 
         for i in range(s):
-            for item in  self.state[i * s: i * s + s]:
+            for item in self.state[i * s: i * s + s]:
                 if item > 9:
                     print(item, " ", end="")
                 else:
                     print(item, "  ", end="")
-            
+
             print()
 
     def solved(self):
@@ -341,18 +336,4 @@ class game():
         self.state = IDAStar(self.state)
 
 
-
-a = game()    
-    
-
-
-
-
-
-
-
-
-
-
-
-
+a = game()
