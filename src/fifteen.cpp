@@ -12,7 +12,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-
+    
     game newGame = game(4);
     newGame.printBoard();
     newGame.run();

@@ -1,8 +1,56 @@
 #include <iostream>
 #include <array>
 
+//TODO                                                                                                                                                                                                     
+//working fifteen puzzle with moves
+//working solvable, gscore, hscore
+//working cameFrom
+//working astar
+//working astar
+
+
+
 using namespace std;
 const int size = 4;
+
+
+
+bool solvable(array<int, size*size> state)
+{
+    int count = 0;
+    
+    for (int i = 0; i < size*size; i++)
+    {
+        for(int j = 0; j < size*size; j++)
+        {
+            if (i < j && state[i] > state[j] && state[j] != 0)
+            {
+                count++;
+            }
+        }
+    }
+
+    if (size % 2 == 1)
+    {
+        return count % 2 == 0;
+    }
+
+    else
+    {
+        //fix positions
+        int zeropos = find_zero(state);
+        zero_odd = zero_pos > 11 || (zeropos > 3 && zeropos < 8);
+
+        if((zero_odd && count % 2 == 0) || (!zero_odd && count % 2 == 1)
+        {
+            return true;
+        }
+    }
+}
+
+
+
+
 
 int find_zero(array <int, size*size> state)
 {
@@ -38,9 +86,8 @@ void pprint (array <int, size*size> state)
 
 }
 
-std::array <int, size*size> neighbors(std::ar)
 
-std::array <int, size*size> randomSolvableState(int s)
+array <int, size*size> randomSolvableState(int s)
 {
 
     std::array <int, size*size> goalState;
