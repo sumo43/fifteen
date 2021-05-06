@@ -1,6 +1,7 @@
 # fifteen
 
-fifteen puzzle solver implementation https://docs.cs50.net/2016/ap/problems/fifteen/3/fifteen3.html
+fifteen puzzle solver implementation 
+https://docs.cs50.net/2016/ap/problems/fifteen/3/fifteen3.html
 
 ### Algorithm
 
