@@ -8,12 +8,9 @@
 
 using namespace std;
 const int size = 4;
+const array<int, size*size> goal = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0};
 
 //TODO add dynamic sizing for print and array checks
-//next project - pathfinder for maps
-//re-implemet weighted sort for successors
-//fix algorithm, try with linux cloud machine or something
-
 
 //possible sources of error: h score, slow successors, 
 
@@ -28,21 +25,44 @@ int h(array<int, size*size> node)
 {
     int cost = 0;
 
+    int row; 
+    int col;
+    int val;
+    //int idealPos
+    //int lc = 0;
+
     for(int i = 0; i < size; i++) {
         for(int j = 0; j < size; j++) {
-            int val = node[i * 4 + j];
+
+            row = i * size;
+            col = j;
+            val = node[row + col];
+
             if(val == 0) {
                 //distance from [3][3]
-                cost += abs(3 - i) + abs(3 - j);
+                cost += 0;
             }
             else {
                 val -= 1;
                 cost += abs((val / 4) - i) + abs((val % 4) - j);
+
+
+                // not sure if my implementation of linear conflicts works
+                /**
+                idealPos = goal[val - 1];
+
+                if(idealPos / size == (row + col) / size) {
+                    lc += abs(idealPos - (row + col));
+                }
+                else if(idealPos % size == (row + col) % size) {
+                    lc += abs(idealPos % size - col);
+                }
+                */
             }
         }
     }
 
-    return cost;
+    return cost; //+ (2 * lc);
 }
 
 int find_zero(array <int, size*size> state)
@@ -72,13 +92,13 @@ void swap(array<int, size*size >&state, int pos1, int pos2) {
     state[pos2] = temp;
 }
 
-//lambda for comparing the h scores for each state
+//lambda for comparing the h scores for each state, to sort successors
+//by decreasing h-score
 
 auto hLambda = [](array<int, size*size> &a, array<int, size*size> &b) -> bool
 {
     return h(a) < h(b);
 };
-
 
 vector< array<int, size*size> > successors(array<int, size*size> state) {
 
@@ -117,12 +137,6 @@ vector< array<int, size*size> > successors(array<int, size*size> state) {
 
 }
 
-
-
-//this is good
-
-
-
 bool solvable(array<int, size*size> state)
 {
     int count = 0;
@@ -158,9 +172,6 @@ bool solvable(array<int, size*size> state)
     return true;
 }
 
-
-//this is good
-
 void pprint (array <int, size*size> state)
 {
 
@@ -188,19 +199,26 @@ void pprint (array <int, size*size> state)
 
 } 
 
-//this is fine
+// pseudorandom state generator - uses random moves instead of a number generator
+// using randomly generated numbers is not guaranteed to be solvable in real time
+// with the heuristic i used
+
 array <int, size*size> randomSolvableState()
 {
 
-    std::array <int, size*size> goalState;
-
-    for(int i = 0; i < size*size; i++)
-    {
-        goalState[i] = i;
-    }
-
+    std::array <int, size*size> goalState = goal;
     int seed = chrono::system_clock::now().time_since_epoch().count();
-    shuffle(goalState.begin(), goalState.end(), std::default_random_engine(seed));
+    srand(seed);
+
+    vector< array<int, size*size> > succs;
+
+    for(int i = 0; i < 300; i++) {
+
+        vector< array<int, size*size> >succs = successors(goalState);
+        int succ = rand() % succs.size();
+
+        goalState = successors(goalState)[succ];
+    }
     /**
     while(!solvable(goalState)) {
         cout << "not solvable" << endl;
@@ -212,9 +230,6 @@ array <int, size*size> randomSolvableState()
     return goalState;
 
 }
-
-
-
 
 int in(vector<array<int, size*size> > path, array<int, size*size> pos)
 {

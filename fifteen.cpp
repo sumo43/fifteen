@@ -1,23 +1,21 @@
 #include <cstdlib>
 #include <unistd.h>
 #include "util.h" // utility function
-#include "game.h" // deals with the game
 
+// returns -1 if found, min otherwise
 
-
-
-
-int search(vector<array<int, size*size> > &path, int g, int bound)
+int search(vector<array<int, size*size> > &visited, vector<array<int, size*size> > &path, int g, int bound)
 {
-    // -1 if found
     
     array<int, size*size> node = path.back();
+    
     int f = g + h(node);
 
     if(f > bound)
     {
         return f;
     }
+
     if (is_goal(node))
     {
         pprint(node);
@@ -30,10 +28,10 @@ int search(vector<array<int, size*size> > &path, int g, int bound)
 
     for(int i = 0; i < succ.size(); i++)
     {
-        if(!in(path, succ[i]))
+        if(!in(path, succ[i]) && !in(visited, succ[i]))
         {
             path.push_back(succ[i]);
-            int t = search(path, g + 1, bound);
+            int t = search(visited, path, g + 1, bound);
             if(t == -1)
             {
                 return -1;
@@ -44,29 +42,30 @@ int search(vector<array<int, size*size> > &path, int g, int bound)
             }
             path.pop_back();
         }
-
+    
     }
 
     return min;
 
 }
 
+// IDA* Algorithm
+// uses vector for path
+
 vector <array<int, size*size> > IDAStar (array<int, size*size> start)
 {
-    //f = g + f
-    //found is -1
 
     vector<array<int, size*size> > path;
+    vector<array<int, size*size> > visited;
     path.push_back(start);
 
     int bound = h(start);
 
     int t;
-
     
     while(true) {
 
-        t = search(path, 0, bound);
+        t = search(visited, path, 0, bound);
 
         if(t == -1)
         {
@@ -83,7 +82,6 @@ vector <array<int, size*size> > IDAStar (array<int, size*size> start)
         
     }
 
-
     return path;
 }
 
@@ -96,6 +94,7 @@ class Game
     public:
         Game() {
             state = randomSolvableState();
+
             zeropos = find_zero(state);
         }
 
@@ -141,6 +140,7 @@ class Game
                 
                 
                 vector< array<int, size*size>> path = IDAStar(state);
+                cout << path.size();
                 for(int i = 0; i < path.size(); i++) {
                     pprint(path[i]);
                     usleep(100000);
@@ -152,9 +152,7 @@ class Game
 
 
         }
-
-
-        
+     
         void run() {
             cout << "Game of Fifteen" << endl;
             char m;
