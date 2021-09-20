@@ -212,7 +212,7 @@ array <int, size*size> randomSolvableState()
 
     vector< array<int, size*size> > succs;
 
-    for(int i = 0; i < 300; i++) {
+    for(int i = 0; i < 200; i++) {
 
         vector< array<int, size*size> >succs = successors(goalState);
         int succ = rand() % succs.size();
